@@ -1,0 +1,4 @@
+1. ```gcc -o data data.c```
+2. ```./dat_decode/data.exe -n dtextc.dat -a dtextc.txt```
+3. Edit the text file to your whims
+4. ```./dat_decode/data.exe -a dtextc.txt -n dtextc.dat```

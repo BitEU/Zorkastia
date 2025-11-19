@@ -14,13 +14,13 @@
  * function.
  */
 
-#ifdef NONBUSINESS
+#if defined(NONBUSINESS) && !defined(UNIVAC)
 #ifdef BSD4_2
 #include <sys/timeb.h>
 #else /* ! BSD4_2 */
 #include <time.h>
 #endif /* ! BSD4_2 */
-#endif /* NONBUSINESS */
+#endif /* NONBUSINESS && !UNIVAC */
 
 logical protected()
 {
@@ -69,12 +69,13 @@ logical wizard()
     if (jobidx()->jobusr == 0x102)
 	return TRUE_;
 #else
-#ifdef unix
+#if defined(unix) && !defined(UNIVAC)
     if (getuid() == 0 || getuid() == WIZARDID)
 	return TRUE_;
 #endif
 #endif
 
+    /* On UNIVAC and other systems, allow wizard mode by default */
     return TRUE_;
 }
 

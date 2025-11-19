@@ -23,11 +23,12 @@ FILE *dbfile;
 #ifdef __AMOS__
 #define TEXTFILE "lib:dtextc.dat"
 #else /* ! __AMOS__ */
-#ifdef unix
+#if defined(unix) || defined(UNIVAC)
 #define TEXTFILE "/usr/games/lib/dunlib/dtextc.dat"
-#else /* ! unix */
- I need a definition for TEXTFILE
-#endif /* ! unix */
+#else /* ! unix && ! UNIVAC */
+/* Windows and other platforms - use local directory */
+#define TEXTFILE "dtextc.dat"
+#endif /* ! unix && ! UNIVAC */
 #endif /* ! __AMOS__ */
 #endif /* ! TEXTFILE */
 

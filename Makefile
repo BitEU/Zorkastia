@@ -1,4 +1,10 @@
-# Makefile for dungeon
+# Makefile for dungeon (Zork)
+# Supports Unix, UNIVAC mainframe, and other platforms
+
+# Platform selection
+# To build for UNIVAC, use: make PLATFORM=UNIVAC
+# To build for Unix (default), use: make
+PLATFORM ?= UNIX
 
 # Where to install the program
 BINDIR = /usr/games
@@ -9,47 +15,56 @@ DATADIR = /usr/games/lib
 # Where to install the man page
 MANDIR = /usr/share/man
 
-# The dungeon program provides a ``more'' facility which tries to
-# figure out how many rows the terminal has.  Several mechanisms are
-# supported for determining this; the most common one has been left
-# uncommented.  If you have trouble, especially when linking, you may
-# have to select a different option.
+# Platform-specific settings
+ifeq ($(PLATFORM),UNIVAC)
+  # UNIVAC mainframe settings
+  CC = cc
+  CFLAGS = -DUNIVAC -O
+  LIBS =
+  TERMFLAG = -DMORE_NONE
+  TARGET = zork_univac
+  GDTFLAG = -DALLOW_GDT
+else
+  # Unix/default settings
+  CC = cc
+  TARGET = zork
+  GDTFLAG = -DALLOW_GDT
 
-# more option 1: use the termcap routines.  On some systems the LIBS
-# variable may need to be set to -lcurses.  On some it may need to
-# be /usr/lib/termcap.o.  These options are commented out below.
-LIBS = -ltermcap
-TERMFLAG =
-# LIBS = -lcurses
-# LIBS = /usr/lib/termcap.o
+  # The dungeon program provides a ``more'' facility which tries to
+  # figure out how many rows the terminal has.  Several mechanisms are
+  # supported for determining this; the most common one has been left
+  # uncommented.  If you have trouble, especially when linking, you may
+  # have to select a different option.
 
-# more option 2: use the terminfo routines.  On some systems the LIBS
-# variable needs to be -lcursesX, but probably all such systems support
-# the termcap routines (option 1) anyhow.
-# LIBS = -lcurses
-# TERMFLAG = -DMORE_TERMINFO
+  # more option 1: use the termcap routines.  On some systems the LIBS
+  # variable may need to be set to -lcurses.  On some it may need to
+  # be /usr/lib/termcap.o.  These options are commented out below.
+  LIBS = -ltermcap
+  TERMFLAG =
+  # LIBS = -lcurses
+  # LIBS = /usr/lib/termcap.o
 
-# more option 3: assume all terminals have 24 rows
-# LIBS =
-# TERMFLAG = -DMORE_24
+  # more option 2: use the terminfo routines.  On some systems the LIBS
+  # variable needs to be -lcursesX, but probably all such systems support
+  # the termcap routines (option 1) anyhow.
+  # LIBS = -lcurses
+  # TERMFLAG = -DMORE_TERMINFO
 
-# more option 4: don't use the more facility at all
-# LIBS =
-# TERMFLAG = -DMORE_NONE
+  # more option 3: assume all terminals have 24 rows
+  # LIBS =
+  # TERMFLAG = -DMORE_24
 
-# End of more options
+  # more option 4: don't use the more facility at all
+  # LIBS =
+  # TERMFLAG = -DMORE_NONE
 
-# Uncomment the following line if you want to have access to the game
-# debugging tool.  This is invoked by typing "gdt".  It is not much
-# use except for debugging.
-GDTFLAG = -DALLOW_GDT
-
-# Compilation flags
-CFLAGS = -g #-static
-# On SCO Unix Development System 3.2.2a, the const type qualifier does
-# not work correctly when using cc.  The following line will cause it
-# to not be used and should be uncommented.
-# CFLAGS= -O -Dconst=
+  # Compilation flags
+  CFLAGS = -g #-static
+  # On SCO Unix Development System 3.2.2a, the const type qualifier does
+  # not work correctly when using cc.  The following line will cause it
+  # to not be used and should be uncommented.
+  # CFLAGS= -O -Dconst=
+endif
 
 ##################################################################
 
@@ -66,16 +81,46 @@ OBJS =	actors.o ballop.o clockr.o demons.o dgame.o dinit.o dmain.o\
 	nrooms.o objcts.o rooms.o sobjs.o supp.o sverbs.o verbs.o villns.o
 
 dungeon: $(OBJS) dtextc.dat
-	$(CC) $(CFLAGS) -o zork $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+	@echo ""
+	@echo "========================================"
+	@echo "  Build complete: $(TARGET)"
+	@echo "========================================"
+	@echo ""
+ifeq ($(PLATFORM),UNIVAC)
+	@echo "Built for UNIVAC mainframe with:"
+	@echo "  - No Windows dependencies"
+	@echo "  - Safe string operations (strncpy)"
+	@echo "  - Simplified terminal handling"
+else
+	@echo "Built for Unix/POSIX systems"
+endif
+	@echo ""
+	@echo "To run the game, type: ./$(TARGET)"
+	@echo ""
 
-install: zork dtextc.dat
-	mkdir -p $(BINDIR) $(LIBDIR) $(MANDIR)/man6
-	cp zork $(BINDIR)
+install: $(TARGET) dtextc.dat
+	mkdir -p $(BINDIR) $(DATADIR) $(MANDIR)/man6
+	cp $(TARGET) $(BINDIR)/zork
 	cp dtextc.dat $(DATADIR)
 	cp dungeon.6 $(MANDIR)/man6/
 
 clean:
-	rm -f $(OBJS) zork core dsave.dat *~
+	rm -f $(OBJS) zork zork_univac core dsave.dat *~
+
+# Help target
+help:
+	@echo "Dungeon (Zork) Makefile"
+	@echo ""
+	@echo "Build for different platforms:"
+	@echo "  make                  - Build for Unix (default)"
+	@echo "  make PLATFORM=UNIVAC  - Build for UNIVAC mainframe"
+	@echo ""
+	@echo "Other targets:"
+	@echo "  make install          - Install the game"
+	@echo "  make clean            - Remove build artifacts"
+	@echo "  make help             - Show this help message"
+	@echo ""
 
 dtextc.dat:
 	cat dtextc.uu1 dtextc.uu2 dtextc.uu3 dtextc.uu4 | uudecode

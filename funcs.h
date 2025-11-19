@@ -21,10 +21,10 @@
  * had better use "r" or fopen will fail.
  */
 
-#ifdef unix
+#if defined(unix) || defined(UNIVAC)
 #define BINREAD "r"
 #define BINWRITE "w"
-#else /* ! unix */
+#else /* ! unix && ! UNIVAC */
 #ifdef __STDC__
 #define BINREAD "rb"
 #define BINWRITE "wb"
@@ -32,7 +32,16 @@
 #define BINREAD "r"
 #define BINWRITE "w"
 #endif /* ! __STDC__ */
-#endif /* ! unix */
+#endif /* ! unix && ! UNIVAC */
+
+/* Platform-specific string copy macro */
+#ifdef UNIVAC
+#define SAFE_STRCPY(dest, src, size) do { strncpy(dest, src, (size)-1); (dest)[(size)-1] = '\0'; } while(0)
+#define SAFE_STRNCPY(dest, src, n) strncpy(dest, src, n)
+#else
+#define SAFE_STRCPY(dest, src, size) strcpy(dest, src)
+#define SAFE_STRNCPY(dest, src, n) strncpy(dest, src, n)
+#endif
 
 typedef int integer;
 typedef int logical;
